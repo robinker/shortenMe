@@ -17,7 +17,7 @@ mongoose.connection.once('open', () => {
 })
 
 const app = express()
-const port = 1234
+const port = process.env.PORT || 1234
 
 app.use(express.json())
 
