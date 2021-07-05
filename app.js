@@ -19,18 +19,7 @@ mongoose.connection.once('open', () => {
 const app = express()
 const port = 1234
 
-app.get('/:id', async (req, res) => {
-    const { id: slug } = req.params
-    try {
-        const url = await UrlModel.findOne({ slug })
-        if(!url) {
-            res.status(404).json('Url not found.')
-        }
-        res.redirect(record.url)
-    } catch (error) {
-        res.status(404).json('Url not found.')
-    }
-})
+app.use(express.json())
 
 app.post('/url', async (req, res) => {
     let { url, slug } = req.body
@@ -45,11 +34,27 @@ app.post('/url', async (req, res) => {
         }
         const newUrl = new UrlModel({ url, slug })
         await newUrl.save()
-        res.json(newUrl)
+        return res.json({
+            original: url,
+            link: process.env.DOMAIN + newUrl.slug
+        })
     } catch (error) {
         if(error.status) res.status(error.status)
         else res.status(500)
-        res.json(error)
+        return res.json(error)
+    }
+})
+
+app.get('/:id', async (req, res) => {
+    const { id: slug } = req.params
+    try {
+        const url = await UrlModel.findOne({ slug })
+        if(!url) {
+            return res.status(404).json('Url not found.')
+        }
+        return res.redirect(url.url)
+    } catch (error) {
+        return res.status(404).json('Url not found.')
     }
 })
 
